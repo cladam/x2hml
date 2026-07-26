@@ -1,0 +1,16 @@
+@project {
+    name: "yml2hml"
+    version: "0.1.0"
+    license: "MIT"
+    entry: "src/main.hc"
+}
+
+@dependencies {
+}
+
+@description {
+    summary: "yml2hml – YAML to HML Converter"
+    author: "cladam"
+    homepage: "https://www.hica.dev"
+    repository: "https://github.com/cladam/x2hml"
+}
