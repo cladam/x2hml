@@ -1,6 +1,6 @@
 # x2hml
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/cladam/x2hml/ci.yml?branch=main&style=flat-square)](https://github.com/cladam/x2hml/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/cladam/x2hml/CI.yml?branch=main&style=flat-square)](https://github.com/cladam/x2hml/actions)
 [![License](https://img.shields.io/github/license/cladam/x2hml?style=flat-square)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-hica.dev-blue?style=flat-square)](https://www.hica.dev/docs/HML-specification/)
 
@@ -30,7 +30,8 @@ yml2hml service.yml | hq '.spec.ports[]'
 
 ## Related Projects
 
-* **[HML Specification](https://www.hica.dev/docs/hml/)** – The target markup language definition.
+* **[HML Specification](https://www.hica.dev/docs/HML-specification/)** – The target markup language definition.
+* **[HML library](https://github.com/cladam/hml)** – Reference implementation of the HML specification in hica.
 * **[hq](https://github.com/cladam/hq)** – A command-line HML query and stream processor (_not started yet_).
 
 ## 📄 License
