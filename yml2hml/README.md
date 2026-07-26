@@ -1,6 +1,8 @@
 # yml2hml
 
-yml2hml is a standalone tool written in hica that converts YAML files to HML format.
+yml2hml is a standalone tool written in [hica](https://www.hica.dev) that converts YAML files to HML format.
+
+HML stands for Hica Markup Language, read the specidication at [HML Specification](https://www.hica.dev/docs/HML-specification/)
 
 ## Usage
 
