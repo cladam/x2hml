@@ -10,7 +10,7 @@ fun convert(r) {
     let input_path = r.cli_positionals[0]
     match read_file(input_path) {
         Ok(content) => {
-            let hml_output = yml2hml.yaml_to_hml(content)
+            let hml_output = yaml_to_hml(content)
             match get_positional(r, 1) {
                 Some(output_path) => {
                     write_file(output_path, hml_output + "\n")
