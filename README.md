@@ -4,18 +4,16 @@
 [![License](https://img.shields.io/github/license/cladam/x2hml?style=flat-square)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-hica.dev-blue?style=flat-square)](https://www.hica.dev/docs/HML-specification/)
 
-The official suite of data converters for transforming structured data formats (YAML, JSON, TOML, and more) into [HML](https://www.hica.dev/docs/hml/).
+The official suite of data converters for transforming structured data formats (YAML, JSON, TOML, and more) into [HML](https://www.hica.dev/docs/HML-specification/).
 
 `x2hml` is maintained as a monorepo containing standalone command-line tools and libraries for each source format.
 
-
 ## Packages
 
-| Package | Language / Target | Description | Status |
+| Package | Language | Description | Status |
 | :--- | :--- | :--- | :--- |
-| [**`yml2hml`**](./yml2hml) | CLI / Node / Rust | Convert YAML documents and streams to HML | 🟡 Active Dev |
-| [**`json2hml`**](./json2hml) | CLI / Node / Rust | Convert JSON payloads and streams to HML | 📑 Planned |
-
+| [**`yml2hml`**](./yml2hml) | hica | Convert YAML documents and streams to HML | 🟡 Active Dev |
+| [**`json2hml`**](./json2hml) | hica | Convert JSON payloads and streams to HML | 📑 Planned |
 
 ### Basic Usage
 
@@ -32,9 +30,8 @@ yml2hml service.yml | hq '.spec.ports[]'
 
 ## Related Projects
 
-* **[HML Specification](https://www.hica.dev/docs/hml/)** — The target markup language definition.
-* **[hq](https://github.com/cladam/hq)** — A command-line HML query and stream processor.
-
+* **[HML Specification](https://www.hica.dev/docs/hml/)** – The target markup language definition.
+* **[hq](https://github.com/cladam/hq)** – A command-line HML query and stream processor (_not started yet_).
 
 ## 📄 License
 
