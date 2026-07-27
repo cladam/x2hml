@@ -19,6 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         project: [yml2hml, json2hml]
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
         include:
           - os: ubuntu-latest
             artifact_suffix: linux-x86_64
@@ -84,7 +85,7 @@ jobs:
       - name: Build (${{ matrix.project }})
         if: steps.check_dir.outputs.exists == 'true'
         working-directory: ${{ matrix.project }}
-        run: hica build
+        run: hica build -o ${{ matrix.project }}
 
       - name: Run tests (Unix)
         if: runner.os != 'Windows' && steps.check_dir.outputs.exists == 'true'
