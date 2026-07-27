@@ -14,9 +14,11 @@ on:
 
 jobs:
   build:
-    name: Build & Test (${{ matrix.artifact_suffix }})
+    name: Build & Test (${{ matrix.project }} / ${{ matrix.artifact_suffix }})
     strategy:
+      fail-fast: false
       matrix:
+        project: [yml2hml, json2hml]
         include:
           - os: ubuntu-latest
             artifact_suffix: linux-x86_64
@@ -27,8 +29,10 @@ jobs:
           - os: windows-latest
             artifact_suffix: windows-x86_64
     runs-on: ${{ matrix.os }}
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Install Koka (Unix)
         if: runner.os != 'Windows'
@@ -64,105 +68,90 @@ jobs:
           hica --version
         shell: bash
 
-      - name: Build subprojects (Unix)
-        if: runner.os != 'Windows'
+      - name: Check project directory existence
+        id: check_dir
+        shell: bash
         run: |
-          for proj in yml2hml json2hml; do
-            if [ -d "$proj" ]; then
-              echo "Building $proj..."
-              cd "$proj"
-              hica build
-              cd ..
-            fi
-          done
+          if [ -d "${{ matrix.project }}" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Directory '${{ matrix.project }}' does not exist. Skipping compilation."
+          fi
 
-      - name: Build subprojects (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          foreach ($proj in "yml2hml", "json2hml") {
-            if (Test-Path $proj) {
-              Write-Host "Building $proj..."
-              Set-Location $proj
-              & hica build
-              Set-Location ..
-            }
-          }
+      - name: Build (${{ matrix.project }})
+        if: steps.check_dir.outputs.exists == 'true'
+        working-directory: ${{ matrix.project }}
+        run: hica build
 
       - name: Run tests (Unix)
-        if: runner.os != 'Windows'
+        if: runner.os != 'Windows' && steps.check_dir.outputs.exists == 'true'
+        working-directory: ${{ matrix.project }}
         run: |
-          set +e
-          failed=0
-          for proj in yml2hml json2hml; do
-            if [ -d "$proj/tests" ]; then
-              for f in $proj/tests/*_test.hc; do
-                [ -e "$f" ] || continue
-                echo "=== $f ==="
-                output=$(hica test "$f" 2>&1)
-                echo "$output"
-                if echo "$output" | grep -q 'failed'; then
-                  failed=1
-                fi
-              done
-            fi
-          done
-          exit $failed
+          if [ -d "tests" ]; then
+            failed=0
+            for f in tests/*_test.hc; do
+              [ -e "$f" ] || continue
+              echo "=== $f ==="
+              output=$(hica test "$f" 2>&1)
+              echo "$output"
+              if echo "$output" | grep -q 'failed'; then
+                failed=1
+              fi
+            done
+            exit $failed
+          fi
 
       - name: Run tests (Windows)
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && steps.check_dir.outputs.exists == 'true'
+        working-directory: ${{ matrix.project }}
         shell: pwsh
         continue-on-error: true # running tests fail due to path errors on Windows
         run: |
-          $failed = 0
-          foreach ($proj in "yml2hml", "json2hml") {
-            if (Test-Path "$proj/tests") {
-              Get-ChildItem "$proj/tests/*_test.hc" | ForEach-Object {
-                $f = $_.FullName
-                Write-Host "=== $f ==="
-                $output = & hica test $f 2>&1
-                Write-Host $output
-                $stem = [System.IO.Path]::GetFileNameWithoutExtension($f)
-                $bin = "$proj\tests\$stem.exe"
-                if (Test-Path $bin) {
-                  & ".\$bin"
-                  if ($LASTEXITCODE -ne 0) {
-                    $failed = 1
-                  }
+          if (Test-Path "tests") {
+            $failed = 0
+            Get-ChildItem "tests/*_test.hc" | ForEach-Object {
+              $f = $_.FullName
+              Write-Host "=== $f ==="
+              $output = & hica test $f 2>&1
+              Write-Host $output
+              $stem = [System.IO.Path]::GetFileNameWithoutExtension($f)
+              $bin = "tests\$stem.exe"
+              if (Test-Path $bin) {
+                & ".\$bin"
+                if ($LASTEXITCODE -ne 0) {
+                  $failed = 1
                 }
               }
             }
-          }
-          if ($failed -eq 1) {
-            exit 1
-          }
-
-      - name: Package artifacts (Unix)
-        if: runner.os != 'Windows'
-        run: |
-          mkdir -p artifacts
-          for proj in yml2hml json2hml; do
-            if [ -f "$proj/$proj" ]; then
-              cp "$proj/$proj" "artifacts/${proj}-${{ matrix.artifact_suffix }}"
-            fi
-          done
-
-      - name: Package artifacts (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path artifacts
-          foreach ($proj in "yml2hml", "json2hml") {
-            if (Test-Path "$proj\$proj.exe") {
-              Copy-Item "$proj\$proj.exe" -Destination "artifacts\${proj}-${{ matrix.artifact_suffix }}.exe"
+            if ($failed -eq 1) {
+              exit 1
             }
           }
 
-      - name: Upload artifacts
+      - name: Package artifact (Unix)
+        if: runner.os != 'Windows' && steps.check_dir.outputs.exists == 'true'
+        run: |
+          mkdir -p dist
+          if [ -f "${{ matrix.project }}/${{ matrix.project }}" ]; then
+            cp "${{ matrix.project }}/${{ matrix.project }}" "dist/${{ matrix.project }}-${{ matrix.artifact_suffix }}"
+          fi
+
+      - name: Package artifact (Windows)
+        if: runner.os == 'Windows' && steps.check_dir.outputs.exists == 'true'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist
+          if (Test-Path "${{ matrix.project }}\${{ matrix.project }}.exe") {
+            Copy-Item "${{ matrix.project }}\${{ matrix.project }}.exe" -Destination "dist\${{ matrix.project }}-${{ matrix.artifact_suffix }}.exe"
+          }
+
+      - name: Upload artifact
+        if: steps.check_dir.outputs.exists == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: binaries-${{ matrix.artifact_suffix }}
-          path: artifacts/*
+          name: ${{ matrix.project }}-${{ matrix.artifact_suffix }}
+          path: dist/*
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -174,15 +163,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download artifacts
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
+          path: release-artifacts
           merge-multiple: true
 
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: |
-            *.tar.gz
-            *.zip
+          files: release-artifacts/*
