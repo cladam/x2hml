@@ -61,6 +61,8 @@ jobs:
           curl -fsSL -o "$env:TEMP\install-hica.ps1" https://www.hica.dev/install.ps1
           & "$env:TEMP\install-hica.ps1"
           "$env:LOCALAPPDATA\hica" | Out-File -Append -FilePath $env:GITHUB_PATH
+          # Pre-create standard library directory structure
+          New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.hica\stdlib"
 
       - name: Verify compiler versions
         run: |
