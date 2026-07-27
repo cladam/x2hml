@@ -6,6 +6,8 @@
 }
 
 @dependencies {
+    yaml: "latest"
+    hml: "1.2.2"
 }
 
 @description {
