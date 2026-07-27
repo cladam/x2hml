@@ -2,7 +2,7 @@ import "std/cli"
 import "yml2hml"
 
 fun make_spec() =>
-    cli("yml2hml", "1.1.0", "convert YAML files to HML format")
+    cli("yml2hml", "1.2.0", "convert YAML files to HML format")
         |> arg("input", "YAML file to convert", true)
         |> arg("output", "output HML file (default: stdout)", false)
 
