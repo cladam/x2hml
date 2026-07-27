@@ -194,4 +194,4 @@ jobs:
           generate_release_notes: true
           files: |
             release-artifacts/*
-            ${{ matrix.project }}/install.sh
+            ${{ steps.meta.outputs.project }}/install.sh
