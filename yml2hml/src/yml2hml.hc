@@ -357,14 +357,33 @@ pub fun collect_object_list(st: ConvertState, expected_indent: int, elem_name: s
         let indent = count_indent(line)
         if indent == expected_indent && has_prefix(trimmed, "- ") {
             let pad = make_pad(depth)
-            let item_result = collect_object_item(st0, expected_indent, depth)
-            let item_lines = item_result.0
-            let st2 = item_result.1
-            let header = pad + "@" + elem_name + " \{"
-            let footer = pad + "\}"
-            let block = [header] + item_lines + [footer]
-            let rest = collect_object_list(st2, expected_indent, elem_name, depth)
-            (block + rest.0, rest.1)
+            let val = strip(trimmed[2:])
+            if is_flow_map(val) {
+                let st2 = advance(st0)
+                let header = pad + "@" + elem_name + " \{"
+                let footer = pad + "\}"
+                let inner = strip(val[1:str_length(val) - 1])
+                let pairs = split(inner, ",")
+                let hml_pairs = map(pairs, (pair) => {
+                    let p = strip(pair)
+                    match index_of(p, ": ") {
+                        Some(i) => pad + "    " + to_hml_key(p[:i]) + ": " + hml_value(p[i + 2:]),
+                        None => pad + "    " + to_hml_key(p)
+                    }
+                })
+                let block = [header] + hml_pairs + [footer]
+                let rest = collect_object_list(st2, expected_indent, elem_name, depth)
+                (block + rest.0, rest.1)
+            } else {
+                let item_result = collect_object_item(st0, expected_indent, depth)
+                let item_lines = item_result.0
+                let st2 = item_result.1
+                let header = pad + "@" + elem_name + " \{"
+                let footer = pad + "\}"
+                let block = [header] + item_lines + [footer]
+                let rest = collect_object_list(st2, expected_indent, elem_name, depth)
+                (block + rest.0, rest.1)
+            }
         } else {
             ([], st0)
         }
@@ -380,8 +399,11 @@ pub fun is_list_of_objects(st: ConvertState, expected_indent: int) : bool {
             let indent = count_indent(line)
             if indent == expected_indent && has_prefix(trimmed, "- ") {
                 let val = strip(trimmed[2:])
-                let sep = find_key_sep(val)
-                sep >= 0
+                if is_flow_map(val) { true }
+                else {
+                    let sep = find_key_sep(val)
+                    sep >= 0
+                }
             } else {
                 false
             }
