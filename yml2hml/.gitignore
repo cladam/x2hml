@@ -9,6 +9,7 @@ src/*
 
 tests/*
 !tests/*.hc
+!tests/*.yml
 
 # tbdflow intent log (local-only, never committed)
 .tbdflow-intent.json

@@ -1,0 +1,8 @@
+timeout: 30s
+interval: 500ms
+created: 2024-05-27T07:32:00Z
+modified: 2024-05-27T00:32:00-07:00
+date_only: 2024-05-27
+time_only: 07:32:00
+not_duration: 30x
+not_datetime: 2024-05-27X07:32:00Z

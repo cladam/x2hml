@@ -36,6 +36,19 @@ test "hml_value: float stays unquoted" {
     assert_eq(hml_value("3.14"), "3.14")
 }
 
+test "hml_value: duration stays unquoted" {
+    assert_eq(hml_value("30s"), "30s")
+    assert_eq(hml_value("500ms"), "500ms")
+    assert_eq(hml_value("24h"), "24h")
+    assert_eq(hml_value("5m"), "5m")
+}
+
+test "hml_value: datetime stays unquoted" {
+    assert_eq(hml_value("2024-05-27T07:32:00Z"), "2024-05-27T07:32:00Z")
+    assert_eq(hml_value("2024-05-27"), "2024-05-27")
+    assert_eq(hml_value("07:32:00"), "07:32:00")
+}
+
 test "hml_value: true bool" {
     assert_eq(hml_value("true"), "true")
 }

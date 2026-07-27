@@ -1,5 +1,7 @@
 // yml2hml.hc — Convert YAML files to HML format
 // HML Specification: https://www.hica.dev/docs/HML-specification/
+
+import "std/datetime"
 //
 // Usage:
 //   hica run src/yml2hml.hc -- input.yml
@@ -93,6 +95,25 @@ pub fun yaml_bool_to_hml(v: string) : string => match v {
 
 pub fun is_yaml_null(v: string) : bool => v == "null" || v == "~"
 
+pub fun is_hml_duration(v: string) : bool {
+    let len = str_length(v)
+    if len < 2 { false }
+    else if ends_with(v, "ns") || ends_with(v, "us") || ends_with(v, "ms") {
+        match parse_int(v[:len - 2]) {
+            Some(_) => true,
+            None => false
+        }
+    } else if ends_with(v, "s") || ends_with(v, "m") || ends_with(v, "h") || ends_with(v, "d") {
+        match parse_int(v[:len - 1]) {
+            Some(_) => true,
+            None => false
+        }
+    } else { false }
+}
+
+pub fun is_datetime(v: string) : bool =>
+    datetime_kind(v) != "invalid"
+
 // Check if value is a YAML flow sequence like [val1, val2, val3]
 pub fun is_flow_seq(v: string) : bool =>
     has_prefix(v, "[") && ends_with(v, "]")
@@ -175,6 +196,8 @@ pub fun hml_value(s: string) : string {
     else if is_flow_seq(v) { convert_flow_seq(v) }
     else if is_yaml_bool(v) { yaml_bool_to_hml(v) }
     else if is_yaml_null(v) { "null" }
+    else if is_hml_duration(v) { v }
+    else if is_datetime(v) { v }
     else {
         match parse_int(v) {
             Some(_) => v,
