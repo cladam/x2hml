@@ -102,12 +102,12 @@ pub fun yaml_to_hml_value(y: Yaml) : Hml => match y {
     }
     else if is_datetime(s) { HDatetime(s) }
     else {
-      match parse_int(s) {
-        Some(i) => HInt(i),
-        None => match parse_float(s) {
-          Some(f) => HFloat(f),
-          None => HStr(s)
-        }
+      let opt_i = parse_int(s)
+      let opt_f = parse_float(s)
+      match (opt_i, opt_f) {
+        (Some(i), _) => HInt(i),
+        (_, Some(f)) => HFloat(f),
+        _ => HStr(s)
       }
     }
   },
@@ -129,7 +129,7 @@ pub fun to_hml_doc(y: Yaml) : list<HmlNode> => match y {
 // ============================================================
 
 pub fun hml_show(v: Hml) : string => match v {
-  HStr(s) => "\"" + s + "\"",
+  HStr(s) => if contains(s, "\n") { "\"\"\"\n" + s + "\n\"\"\"" } else { "\"" + s + "\"" },
   HInt(n) => show(n),
   HFloat(f) => show(f),
   HBool(b) => if b { "true" } else { "false" },
@@ -183,8 +183,12 @@ pub fun pretty_node(node: HmlNode, indent: int) : string {
 
 // Top-level converter
 pub fun yaml_to_hml(input: string) : string {
-  match yaml_parse(input) {
-    Ok(y) => hml_pretty(to_hml_doc(y), 0),
+  let safe_input = replace(input, "#!/", "___SHEBANG___")
+  match yaml_parse(safe_input) {
+    Ok(y) => {
+      let out = hml_pretty(to_hml_doc(y), 0)
+      replace(out, "___SHEBANG___", "#!/")
+    },
     Err(e) => "// Error parsing YAML: " + e
   }
 }
