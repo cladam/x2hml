@@ -1,0 +1,39 @@
+# Infrastructure Configuration for Terraform Module
+cluster_name: production_aws_cluster
+region: us-east-1
+environment: prod
+
+# Networking & Multi-AZ
+availability_zones: ["us-east-1a", "us-east-1b", "us-east-1c"]
+vpc_cidr: "10.0.0.0/16"
+
+# Node Pool Scaling Configuration
+scaling_policy:
+  min_capacity: 2
+  max_capacity: 10
+  desired_capacity: 4
+  cpu_threshold_percentage: 75.5
+
+# Security Groups & Firewall Rules (Flow Mappings)
+ingress_rules:
+  - { port: 80, protocol: "TCP", cidr: "0.0.0.0/0", description: "HTTP traffic" }
+  - { port: 443, protocol: "TCP", cidr: "0.0.0.0/0", description: "HTTPS traffic" }
+  - { port: 22, protocol: "TCP", cidr: "10.0.0.0/8", description: "Internal SSH access" }
+
+# Database Settings
+database_config:
+  db_name: main_db
+  allocated_storage_gb: 100
+  multi_az: yes
+  auto_minor_version_upgrade: true
+  backup_retention_days: 14
+  deletion_protection: false
+  maintenance_window: ~ # null value
+
+# EC2 Instance User-Data Startup Script (Multi-line Block Scalar)
+user_data_script: |
+  #!/bin/bash
+  set -euo pipefail
+  echo "Initializing node for x2hml cluster..."
+  systemctl start docker
+  echo "Done!"

@@ -199,16 +199,12 @@ pub fun hml_value(s: string) : string {
     else if is_hml_duration(v) { v }
     else if is_datetime(v) { v }
     else {
-        match parse_int(v) {
-            Some(_) => v,
-            None => match parse_float(v) {
-                Some(_) => v,
-                None => {
-                    if has_prefix(v, "'") { "\"" + unquote(v) + "\"" }
-                    else if has_prefix(v, "\"") { v }
-                    else { "\"" + v + "\"" }
-                }
-            }
+        if is_some(parse_int(v)) { v }
+        else if is_some(parse_float(v)) { v }
+        else {
+            if has_prefix(v, "'") { "\"" + unquote(v) + "\"" }
+            else if has_prefix(v, "\"") { v }
+            else { "\"" + v + "\"" }
         }
     }
 }
